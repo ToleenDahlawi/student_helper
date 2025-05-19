@@ -19,7 +19,7 @@ while true; do
       GPA_calculator.sh
       ;;
     2)
-      available_majors 
+      available_majors.sh
       ;;
     3)
      cgpa.sh
