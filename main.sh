@@ -258,7 +258,7 @@ while true; do
             gpa=$(calculate_gpa)  
             ;;
         2)
-            available_majors"$gpa"  
+            available_majors "$gpa"  
             ;;
 
         3)
