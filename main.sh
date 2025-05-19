@@ -248,8 +248,8 @@ while true; do
     echo -e "\n Welcome to the Student Helper \n Please choose the number of the service you want :"
     echo "1) Calculate GPA"
     echo "2) Show Available Majors Based on My GPA"
-    echo "3)
-    echo "4)
+    echo "3) Calculate University Cumulative GPA"
+    echo "4) Check Honors Eligibility"
     echo "5) Exit"
     read -p "Choose an option [1-5]: " choice
 
