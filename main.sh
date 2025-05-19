@@ -105,6 +105,7 @@ done
 }
 
 # [ University GPA ]
+University_GPA(){
 # Ask for the GPA scale (4.0 or 5.0)
 while true; do
   read -p "What is your GPA scale? (4 or 5): " system
@@ -153,10 +154,11 @@ echo "GPA=$cgpa" > last_cgpa.txt
 echo "SYSTEM=$system" >> last_cgpa.txt
 echo -e "GPA=$cgpa\nSYSTEM=$system\nCALCULATED=\"$(date)\"" > last_cgpa.txt
 echo "Saved to last_cgpa.txt."
+}
 
 # [ Check_honor ]
 # Honors eligibility checker script
-
+Check_honor(){
 # Check if a previously saved GPA file exists
 if [[ -f last_cgpa.txt ]]; then
   # Load the saved GPA data
@@ -195,6 +197,7 @@ else
     source last_cgpa.txt
   fi
 fi
+}
 
 # Display the GPA being used
 echo "-------------------------------"
