@@ -248,22 +248,32 @@ while true; do
     echo -e "\n Welcome to the Student Helper \n Please choose the number of the service you want :"
     echo "1) Calculate GPA"
     echo "2) Show Available Majors Based on My GPA"
-    echo "3) Exit"
-    read -p "Choose an option [1-3]: " choice
+    echo "3)
+    echo "4)
+    echo "5) Exit"
+    read -p "Choose an option [1-5]: " choice
 
     case $choice in
         1)
-            gpa=$(calculate_gpa)  # Call GPA calculator
+            gpa=$(calculate_gpa)  
             ;;
         2)
-            available_majors"$gpa"  # Show suitable majors
+            available_majors"$gpa"  
             ;;
+
         3)
+            University_GPA 
+            ;;
+
+        4)
+            Check_honor  
+            ;;
+        5)
             echo " Thank you for using Student Helper!"
             break
             ;;
         *)
-            echo " Invalid option. Please select 1, 2, or 3."
+            echo " Invalid option. Please select 1-5."
             ;;
     esac
 done
