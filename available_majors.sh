@@ -69,4 +69,4 @@ if [[ -z "$1" ]]; then
         fi
     fi
 done
-}available_majors
+} available_majors
