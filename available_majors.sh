@@ -1,6 +1,18 @@
 #!/bin/bash
-# Function to show available university majors based on GPA and gender and the college
 
+selected_college=""
+student_gender=""
+total_weight=0
+eligible_majors=()
+
+#display available colleges from majors.txt
+function show_colleges {
+    echo ""
+    echo "Available Colleges:"
+    awk -F, 'NR>1 {print $1}' majors.txt | sort -u
+}
+
+# Function to show available university majors based on GPA and gender and the college
 
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
