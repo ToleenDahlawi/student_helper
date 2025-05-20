@@ -1,4 +1,4 @@
-# Function to show available university majors based on GPA and gender 
+# Function to show available university majors based on GPA and gender and the college
 gpa=$1
 
 # If GPA is not provided, ask the user what to do
