@@ -1,4 +1,3 @@
-correct this code:
 #!/bin/bash
 
 # Main menu for student helper project
