@@ -1,10 +1,13 @@
 # Function to show available university majors based on GPA and gender and the college
+
 gpa=$1
 
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
-        echo "No GPA calculated. Choose an option:"
+        echo "No GPA calculated. Choose an option "
         echo "  1) Enter your GPA   2) Cancel"
+        echo " 1) Enter your GPA   2) Cancel"
+
         read -p "Choose an option [1-2]: " op
 
         case $op in
@@ -67,3 +70,7 @@ if [[ -z "$1" ]]; then
         fi
     fi
 done
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9346ce (i made changes to available_ majors file)
