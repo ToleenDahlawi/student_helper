@@ -16,11 +16,13 @@ function choose_college {
    
     #Prompt user to enter the college name
     read -p "Enter the college: " $selected_college
+    
     if [[ $(echo "$selected_college" | sed 's/^[ \t]*//;s/[ \t]*$//') ]]; then # Remove spaces
     selected_college=${selected_college,,}  # Convert to lowercase for comparison
     echo ""
     show_colleges
     echo ""
+    
     # Check if the college exists in the majors.txt file
    if awk -F, 'NR>1 {print $1}' majors.txt | grep -Fxq "$selected_college"; then
                 break
