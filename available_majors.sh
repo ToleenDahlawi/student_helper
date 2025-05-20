@@ -1,5 +1,4 @@
-# Function to show available university majors based on GPA and gender
-available_majors() {
+# Function to show available university majors based on GPA and gender available major
 gpa=$1
 
 # If GPA is not provided, ask the user what to do
@@ -68,4 +67,3 @@ if [[ -z "$1" ]]; then
         fi
     fi
 done
-}
