@@ -1,16 +1,5 @@
 #!/bin/bash
 
-selected_college=""
-student_gender=""
-total_weight=0
-eligible_majors=()
-
-#display available colleges from majors.txt
-function show_colleges {
-    echo ""
-    echo "Available Colleges:"
-    awk -F, 'NR>1 {print $1}' majors.txt | sort -u
-}
 function choose_college {
     #Gender input with validation
     while true; do
