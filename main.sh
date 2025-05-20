@@ -20,16 +20,16 @@ while true; do
 
   case $choice in
     1)
-      GPA_calculator.sh
+      GPA_calculator
       ;;
     2)
-      available_majors.sh 
+      available_majors
       ;;
     3)
-     cgpa.sh
+     cgpa
       ;;
     4)
-      Check_honors.sh
+      Check_honors
       ;;
     5)
       echo "Thank you for using our program"
