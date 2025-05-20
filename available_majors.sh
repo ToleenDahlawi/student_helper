@@ -37,7 +37,7 @@ if [[ -z "$1" ]]; then
     # Check if the college exists in the majors.csv file
    if ! cut -d',' -f1 majors.csv | grep -iq "^$college$"; then
        echo "Sorry, the college you entered is not available"
-      return
+      exit 1
    fi
 
     # Display the majors available for the selected college and gender
