@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Function to get input and validate it's a number between 0 and 100
-get_score() {
+calculate_gpa {
     local prompt=$1
     local score
     while true; do
@@ -26,7 +26,7 @@ gpa=$(echo "scale=2; $hs_score*0.3 + $gapt_score*0.3 + $aat_score*0.4" | bc)
 # Display result
 echo "Calculated GPA: $gpa"
 echo $gpa > gpa.txt
-
+available_majors(){
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
    if [[ -f gpt.txt ]]; then
@@ -100,7 +100,7 @@ if [[ -z "$1" ]]; then
         fi
     fi
 done
-
+}
 # Function to calculate university cumulative GPA
 calculate_cgpa() {
     while true; do
@@ -148,66 +148,86 @@ calculate_cgpa() {
 
 # Function to check university honors eligibility
 check_honors() {
-    if [[ -f last_cgpa.txt ]]; then
-        source last_cgpa.txt
-        echo "Found saved GPA file."
-        echo "Saved GPA: $GPA out of $SYSTEM (Calculated on $CALCULATED)"
-        read -p "Do you want to use this GPA? (y/n): " use_saved
-        if [[ $use_saved != "y" ]]; then
-            read -p "Do you know your cumulative GPA? (y/n): " know_gpa
-            if [[ $know_gpa == "y" ]]; then
-                read -p "Enter your cumulative GPA: " GPA
-                read -p "Enter GPA scale (4 or 5): " SYSTEM
-            else
-                echo "Redirecting to cumulative GPA calculator..."
-                calculate_cgpa
-                source last_cgpa.txt
-            fi
-        fi
+
+# Check if a previously saved GPA file exists
+if [[ -f last_cgpa.txt ]]; then
+  # Load the saved GPA data
+  source last_cgpa.txt
+  echo "Found saved GPA file."
+  echo "Saved GPA: $GPA out of $SYSTEM (Calculated on $CALCULATED)"
+ 
+  # Ask if the user wants to reuse the saved GPA
+  read -p "Do you want to use this GPA? (y/n): " use_saved
+  if [[ $use_saved != "y" ]]; then
+    # Ask if the user knows their GPA
+    read -p "Do you know your cumulative GPA? (y/n): " know_gpa
+    if [[ $know_gpa == "y" ]]; then
+      # User enters GPA and the GPA system (out of 4 or 5)
+      read -p "Enter your cumulative GPA: " GPA
+      read -p "Enter GPA scale (4 or 5): " SYSTEM
     else
-        echo "No saved GPA found."
-        read -p "Do you know your cumulative GPA? (y/n): " know_gpa
-        if [[ $know_gpa == "y" ]]; then
-            read -p "Enter your cumulative GPA: " GPA
-            read -p "Enter GPA scale (4 or 5): " SYSTEM
-        else
-            echo "Redirecting to cumulative GPA calculator..."
-            calculate_cgpa
-            source last_cgpa.txt
-        fi
+      # Redirect to GPA calculator script
+      echo "Redirecting to cumulative GPA calculator..."
+      bash cgpa.sh
+      source last_cgpa.txt  # Reload the generated GPA data
     fi
+  fi
+else
+  # No GPA file found, ask user to enter or calculate
+  echo "No saved GPA found."
+  read -p "Do you know your cumulative GPA? (y/n): " know_gpa
+  if [[ $know_gpa == "y" ]]; then
+    # Manual input of GPA and system
+    read -p "Enter your cumulative GPA: " GPA
+    read -p "Enter GPA scale (4 or 5): " SYSTEM
+  else
+    # Call external GPA calculator
+    echo "Redirecting to cumulative GPA calculator..."
+    bash cgpa.sh
+    source last_cgpa.txt
+  fi
+fi
 
-    echo "-------------------------------"
-    echo "Your GPA is: $GPA out of $SYSTEM"
+# Display the GPA being used
+echo "-------------------------------"
+echo "Your GPA is: $GPA out of $SYSTEM"
 
-    honor_message_shown=false
+# Initialize honors eligibility flag
+honor_message_shown=false
 
-    if [[ $SYSTEM == 5 ]]; then
-        if awk -v g="$GPA" 'BEGIN{exit !(g >= 4.75)}'; then
-            echo "Congratulations! You are eligible for First Class Honors."
-            honor_message_shown=true
-        elif awk -v g="$GPA" 'BEGIN{exit !(g >= 4.25)}'; then
-            echo "Congratulations! You are eligible for Second Class Honors."
-            honor_message_shown=true
-        fi
-    else
-        if awk -v g="$GPA" 'BEGIN{exit !(g >= 3.75)}'; then
-            echo "Congratulations! You are eligible for First Class Honors."
-            honor_message_shown=true
-        elif awk -v g="$GPA" 'BEGIN{exit !(g >= 3.25)}'; then
-            echo "Congratulations! You are eligible for Second Class Honors."
-            honor_message_shown=true
-        fi
-    fi
+# Determine eligibility based on GPA system (5-point or 4-point)
+if [[ $SYSTEM == 5 ]]; then
+  # First Class Honors (GPA >= 4.75)
+  if awk -v g="$GPA" 'BEGIN{exit !(g >= 4.75)}'; then
+    echo "Congratulations! You are eligible for First Class Honors."
+    honor_message_shown=true
+  # Second Class Honors (GPA >= 4.25)
+  elif awk -v g="$GPA" 'BEGIN{exit !(g >= 4.25)}'; then
+    echo "Congratulations! You are eligible for Second Class Honors."
+    honor_message_shown=true
+  fi
+else
+  # For 4-point system:
+  # First Class Honors (GPA >= 3.75)
+  if awk -v g="$GPA" 'BEGIN{exit !(g >= 3.75)}'; then
+    echo "Congratulations! You are eligible for First Class Honors."
+    honor_message_shown=true
+  # Second Class Honors (GPA >= 3.25)
+  elif awk -v g="$GPA" 'BEGIN{exit !(g >= 3.25)}'; then
+    echo "Congratulations! You are eligible for Second Class Honors."
+    honor_message_shown=true
+  fi
+fi
 
-    if [[ $honor_message_shown == true ]]; then
-        echo "Note: Honors eligibility may vary by university."
-        echo "  1. No failing grades during the study period."
-        echo "  2. Completing the program within the official study period."
-        echo "  3. Completing at least 60% of coursework at the same university."
-    else
-        echo "Unfortunately, you are not eligible for honors."
-    fi
+# If eligible, show additional requirements
+if [[ $honor_message_shown == true ]]; then
+  echo "Note: Honors eligibility may vary by university."
+  echo "  1. No failing grades during the study period."
+  echo "  2. Completing the program within the official study period."
+  echo "  3. Completing at least 60% of coursework at the same university."
+else
+  echo "Unfortunately, you are not eligible for honors."
+fi
 }
 
 # === MAIN MENU LOOP ===
