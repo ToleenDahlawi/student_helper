@@ -25,70 +25,79 @@ calculate_gpa() {
     echo $gpa
 }
 
-# Function to show available majors based on GPA
-available_majors() {
-    local gpa=$1
+# If GPA is not provided, ask the user what to do
+if [[ -z "$1" ]]; then
+   if [[ -f gpt.txt ]]; then
+    gpa=$(<gpa.txt)
+    else
+        echo "No GPA calculated. Choose an option "
+        echo "  1) Enter your GPA   2) Cancel"
 
-    if [[ -z "$gpa" ]]; then
-        echo "No GPA calculated or provided. Choose an option:"
-        echo "1) Calculate GPA"
-        echo "2) Enter your GPA manually"
-        echo "3) Cancel"
-        read -p "Choose an option [1-3]: " op
+        read -p "Choose an option [1-2]: " op
 
         case $op in
-            1) gpa=$(calculate_gpa) ;;
-            2) read -p "Enter your GPA: " gpa ;;
-            3) return ;;
-            *) echo "Invalid option."; return ;;
+            1) read -p "Enter your GPA: " gpa ;;
+            2) exit 0 ;;
+            *) echo "Invalid option."; exit 1 ;;
         esac
+      fi
+     else
+        gpa=$1
     fi
 
+    # Prompt user to enter gender and normalize the input
     while true; do
         read -p "Enter your gender (male/female): " gender
-        gender=${gender,,}
+        gender=$(echo "$gender" | sed 's/^[ \t]*//;s/[ \t]*$//') # Remove spaces
+        gender=${gender,,}  #convert to lowercase
+        
         if [[ "$gender" == "male" || "$gender" == "female" ]]; then
             break
         else
-            echo "Invalid input. Please enter 'male' or 'female'."
+            echo " Invalid input. Please enter 'male' or 'female'."
         fi
     done
-
+   
+    # Prompt user to enter the college name
     read -p "Enter the college: " college
-    college_lc=${college,,}
+    college=$(echo "$college" | sed 's/^[ \t]*//;s/[ \t]*$//')  # Remove spaces
+    college_lc=${college,,}  # Convert to lowercase for comparison
 
-    if [[ ! -f majors.csv ]]; then
-        echo "Error: majors.csv file not found!"
-        return
-    fi
+    # Check if the college exists in the majors.csv file
+   if ! cut -d',' -f1 majors.csv | grep -iq "^$college$"; then
+       echo "Sorry, the college you entered is not available"
+      exit 1
+   fi
 
-    echo -e "\nAvailable majors in ${college^} College for $gender with GPA $gpa:"
-    echo "--------------------------------------------------"
+    # Display the majors available for the selected college and gender
+    echo -e "\nThe majors in the ${college^} College:"
+    echo "--------------------------------------------"
 
-    found=false
+    # Read majors.csv and print majors where the GPA meets the requirement for the user's gender
+    # Use sed to remove the header (first line) from majors.csv, then process the remaining lines
+     sed 1d majors.csv | while IFS=',' read -r col major min_gpa_male min_gpa_female; do
+    # Convert the college name in the file to lowercase for case-insensitive comparison
+    col_lc=$(echo "$col" | tr '[:upper:]' '[:lower:]')
 
-    tail -n +2 majors.csv | while IFS=',' read -r col major min_male min_female; do
-        col=${col,,}
-        if [[ "$col" == "$college_lc" ]]; then
-            found=true
-            if [[ "$gender" == "male" ]]; then
-                comp=$(echo "$gpa >= $min_male" | bc)
-                if [[ $comp -eq 1 ]]; then
-                    echo "- $major (Minimum GPA: $min_male)"
-                fi
-            else
-                comp=$(echo "$gpa >= $min_female" | bc)
-                if [[ $comp -eq 1 ]]; then
-                    echo "- $major (Minimum GPA: $min_female)"
-                fi
+    # Compare user-entered college name with current line's college name
+    if [[ "$col_lc" == "$college" ]]; then
+        if [[ "$gender" == "male" ]]; then
+            # Compare user's GPA with the minimum required GPA for males
+            comp=$(echo "$gpa >= $min_gpa_male" | bc)
+            if [[ "$comp" -eq 1 ]]; then
+                # If user's GPA is sufficient, display the major
+                echo "- $major (Minimum GPA: $min_gpa_male)"
+            fi
+        else
+            # Compare user's GPA with the minimum required GPA for females
+            comp=$(echo "$gpa >= $min_gpa_female" | bc)
+            if [[ "$comp" -eq 1 ]]; then
+                # If user's GPA is sufficient, display the major
+                echo "- $major (Minimum GPA: $min_gpa_female)"
             fi
         fi
-    done
-
-    if ! grep -qi "^$college_lc," majors.csv; then
-        echo "Sorry, the college you entered is not available."
     fi
-}
+done
 
 # Function to calculate university cumulative GPA
 calculate_cgpa() {
