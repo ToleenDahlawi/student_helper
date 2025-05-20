@@ -1,9 +1,11 @@
 # Function to show available university majors based on GPA and gender and the college
 
-gpa=$1
 
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
+   if [[ -f gpt.txt]]; then
+    gpa=$(<gpa.txt)
+    else
         echo "No GPA calculated. Choose an option "
         echo "  1) Enter your GPA   2) Cancel"
 
@@ -14,6 +16,7 @@ if [[ -z "$1" ]]; then
             2) exit 0 ;;
             *) echo "Invalid option."; exit 1 ;;
         esac
+        gpa=$1
     fi
 
     # Prompt user to enter gender and normalize the input
