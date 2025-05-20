@@ -25,3 +25,4 @@ gpa=$(echo "scale=2; $hs_score*0.3 + $gapt_score*0.3 + $aat_score*0.4" | bc)
 
 # Display result
 echo "Calculated GPA: $gpa"
+echo $gpa > gpa.txt
