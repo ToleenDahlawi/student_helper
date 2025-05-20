@@ -1,8 +1,14 @@
 #!/bin/bash
-chmod +x GPA_calculator.sh 2>/dev/null
-chmod +x available_majors.sh 2>/dev/null
-chmod +x cgpa.sh 2>/dev/null
-chmod +x Check_honors.sh 2>/dev/null
+selected_college="" 
+student_gender="" 
+total_weight=0 
+eligible_majors=() 
+
+#display available colleges from majors.txt 
+function show_colleges {     
+echo "" 
+echo "Available Colleges:"     
+awk -F, 'NR>1 {print $1}' majors.txt | sort -u }
 
 # Main menu for student helper project
 
