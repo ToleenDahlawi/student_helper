@@ -1,5 +1,4 @@
-# Function to show available university majors based on GPA and gender
-available_majors() {
+# Function to show available university majors based on GPA and gender and the college
 gpa=$1
 
 # If GPA is not provided, ask the user what to do
@@ -45,7 +44,8 @@ if [[ -z "$1" ]]; then
 
     # Read majors.csv and print majors where the GPA meets the requirement for the user's gender
     # Use sed to remove the header (first line) from majors.csv, then process the remaining lines
-     sed 1d majors.csv | while IFS=',' read -r col major min_gpa_male min_gpa_female; do
+    sed 1d majors.csv | while IFS=',' read -r col major min_gpa_male min_gpa_female; do
+     
     # Convert the college name in the file to lowercase for case-insensitive comparison
     col_lc=$(echo "$col" | tr '[:upper:]' '[:lower:]')
 
@@ -68,4 +68,3 @@ if [[ -z "$1" ]]; then
         fi
     fi
 done
-}
