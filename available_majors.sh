@@ -6,7 +6,7 @@ gpa=$1
 if [[ -z "$1" ]]; then
         echo "No GPA calculated. Choose an option:"
         echo "  1) Enter your GPA   2) Cancel"
-        read -p "Choose an option [1-3]: " op
+        read -p "Choose an option [1-2]: " op
 
         case $op in
             1) read -p "Enter your GPA: " gpa ;;
