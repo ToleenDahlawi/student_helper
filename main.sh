@@ -1,243 +1,199 @@
 #!/bin/bash
 
-# Function to get input and validate it's a number between 0 and 100
 calculate_gpa() {
-    local prompt=$1
-    local score
-    while true; do
-        read -p "$prompt (0-100): " score
-        if [[ $score =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$score >= 0 && $score <= 100" | bc -l) )); then
-            echo $score
-            return
-        else
-            echo "Invalid input. Please enter a number between 0 and 100."
-        fi
-    done
+    get_score() {
+        local prompt=$1
+        local score
+        while true; do
+            read -p "$prompt (0-100): " score
+            if [[ $score =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$score >= 0 && $score <= 100" | bc -l) )); then
+                echo $score
+                return
+            else
+                echo "Invalid input. Please enter a number between 0 and 100."
+            fi
+        done
+    }
+
+    hs_score=$(get_score "Enter High School Cumulative Score")
+    gapt_score=$(get_score "Enter General Aptitude Test Score")
+    aat_score=$(get_score "Enter Academic Achievement Test Score")
+
+    gpa=$(echo "scale=2; $hs_score*0.3 + $gapt_score*0.3 + $aat_score*0.4" | bc)
+    echo "Calculated GPA: $gpa"
+    echo $gpa
 }
 
-# Get the scores from the user
-hs_score=$(calculate_gpa "Enter High School Cumulative Score")
-gapt_score=$(calculate_gpa "Enter General Aptitude Test Score")
-aat_score=$(calculate_gpa "Enter Academic Achievement Test Score")
-
-# Calculate GPA
-gpa=$(echo "scale=2; $hs_score*0.3 + $gapt_score*0.3 + $aat_score*0.4" | bc)
-
-# Display result
-echo "Calculated GPA: $gpa"
-echo $gpa > gpa.txtك
 available_majors() {
-# If GPA is not provided, ask the user what to do
-if [[ -z "$1" ]]; then
-   if [[ -f gpa.txt ]]; then
-    gpa=$(<gpa.txt)
-    else
-        echo "No GPA calculated. Choose an option "
-        echo "  1) Enter your GPA   2) Cancel"
+    local gpa=$1
 
-        read -p "Choose an option [1-2]: " op
+    if [[ -z "$gpa" ]]; then
+        echo "No GPA calculated or provided. Choose an option:"
+        echo "1) Calculate GPA"
+        echo "2) Enter your GPA manually"
+        echo "3) Cancel"
+        read -p "Choose an option [1-3]: " op
 
         case $op in
-            1) read -p "Enter your GPA: " gpa ;;
-            2) exit 0 ;;
-            *) echo "Invalid option."; exit 1 ;;
+            1) gpa=$(calculate_gpa) ;;
+            2) read -p "Enter your GPA: " gpa ;;
+            3) return ;;
+            *) echo "Invalid option."; return ;;
         esac
-      fi
-     else
-        gpa=$1
     fi
 
-    # Prompt user to enter gender and normalize the input
     while true; do
         read -p "Enter your gender (male/female): " gender
-        gender=$(echo "$gender" | sed 's/^[ \t]*//;s/[ \t]*$//') # Remove spaces
-        gender=${gender,,}  #convert to lowercase
-        
+        gender=${gender,,}
         if [[ "$gender" == "male" || "$gender" == "female" ]]; then
             break
         else
-            echo " Invalid input. Please enter 'male' or 'female'."
+            echo "Invalid input. Please enter 'male' or 'female'."
         fi
     done
-   
-    # Prompt user to enter the college name
+
     read -p "Enter the college: " college
-    college=$(echo "$college" | sed 's/^[ \t]*//;s/[ \t]*$//')  # Remove spaces
-    college_lc=${college,,}  # Convert to lowercase for comparison
+    college_lc=${college,,}
 
-    # Check if the college exists in the majors.csv file
-   if ! cut -d',' -f1 majors.csv | grep -iq "^$college$"; then
-       echo "Sorry, the college you entered is not available"
-      exit 1
-   fi
+    if [[ ! -f majors.csv ]]; then
+        echo "Error: majors.csv file not found!"
+        return
+    fi
 
-    # Display the majors available for the selected college and gender
-    echo -e "\nThe majors in the ${college^} College:"
-    echo "--------------------------------------------"
+    echo -e "\nAvailable majors in ${college^} College for $gender with GPA $gpa:"
+    echo "--------------------------------------------------"
 
-    # Read majors.csv and print majors where the GPA meets the requirement for the user's gender
-    # Use sed to remove the header (first line) from majors.csv, then process the remaining lines
-     sed 1d majors.csv | while IFS=',' read -r col major min_gpa_male min_gpa_female; do
-    # Convert the college name in the file to lowercase for case-insensitive comparison
-    col_lc=$(echo "$col" | tr '[:upper:]' '[:lower:]')
+    found=false
 
-    # Compare user-entered college name with current line's college name
-    if [[ "$col_lc" == "$college" ]]; then
-        if [[ "$gender" == "male" ]]; then
-            # Compare user's GPA with the minimum required GPA for males
-            comp=$(echo "$gpa >= $min_gpa_male" | bc)
-            if [[ "$comp" -eq 1 ]]; then
-                # If user's GPA is sufficient, display the major
-                echo "- $major (Minimum GPA: $min_gpa_male)"
-            fi
-        else
-            # Compare user's GPA with the minimum required GPA for females
-            comp=$(echo "$gpa >= $min_gpa_female" | bc)
-            if [[ "$comp" -eq 1 ]]; then
-                # If user's GPA is sufficient, display the major
-                echo "- $major (Minimum GPA: $min_gpa_female)"
+    tail -n +2 majors.csv | while IFS=',' read -r col major min_male min_female; do
+        col=${col,,}
+        if [[ "$col" == "$college_lc" ]]; then
+            found=true
+            if [[ "$gender" == "male" ]]; then
+                comp=$(echo "$gpa >= $min_male" | bc)
+                if [[ $comp -eq 1 ]]; then
+                    echo "- $major (Minimum GPA: $min_male)"
+                fi
+            else
+                comp=$(echo "$gpa >= $min_female" | bc)
+                if [[ $comp -eq 1 ]]; then
+                    echo "- $major (Minimum GPA: $min_female)"
+                fi
             fi
         fi
+    done
+
+    if ! grep -qi "^$college_lc," majors.csv; then
+        echo "Sorry, the college you entered is not available."
     fi
-done
 }
-# Function to calculate university cumulative GPA
+
 calculate_cgpa() {
-   # Ask for the GPA scale (4.0 or 5.0)
-while true; do
-  read -p "What is your GPA scale? (4 or 5): " system
-  [[ $system == 4 || $system == 5 ]] && break
-  echo "Invalid scale. Please enter 4 or 5."
-done
-
-    # Input semester number
-while true; do
-    read -p "How many semesters? " terms
-    [[ $terms =~ ^[1-9][0-9]*$ ]] && break
-    echo "Please enter a valid number of semesters."
-  done
-  total_hours=0
-  total_points=0
-  for ((i = 1; i <= terms; i++)); do
-    # Input credit hours for semester
     while true; do
-      read -p "Total credit hours for semester $i: " hours
-      [[ $hours =~ ^[1-9][0-9]*$ ]] && break
-      echo "Invalid input. Enter a positive integer."
+        read -p "What is your GPA scale? (4 or 5): " system
+        [[ $system == 4 || $system == 5 ]] && break
+        echo "Invalid scale. Please enter 4 or 5."
     done
-    # Input grade points earned in the semester
+
     while true; do
-      read -p "Total grade points for semester $i: " points
-      [[ $points =~ ^[0-9]+([.][0-9]+)?$ ]] && break
-      echo "Invalid input. Enter a valid number."
+        read -p "How many semesters? " terms
+        [[ $terms =~ ^[1-9][0-9]*$ ]] && break
+        echo "Please enter a valid number of semesters."
     done
-    total_hours=$(( total_hours + hours ))    # Accumulate hours
-    total_points=$(echo "$total_points + $points" | bc)  # Accumulate points
-  done
-  # Calculate cumulative GPA formula 
-  cgpa=$(printf "%.2f" "$(echo "$total_points / $total_hours" | bc -l)")
-  # Validation: GPA should not exceed the system max ( neither 4 nor 5)
-  if awk -v g="$cgpa" -v s="$system" 'BEGIN{exit !(g > s)}'; then
-    echo "Error: GPA result exceeds maximum scale ($system). Check your input."
-    exit 1
-  fi
-  echo "Your cumulative GPA is: $cgpa out of $system"
- # output the result
- 
-# Save to file with date/time in English
-timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-# Save to file with result and time
-echo "GPA=$cgpa" > last_cgpa.txt
-echo "SYSTEM=$system" >> last_cgpa.txt
-echo -e "GPA=$cgpa\nSYSTEM=$system\nCALCULATED=\"$(date)\"" > last_cgpa.txt
-echo "Saved to last_cgpa.txt."
-}
 
-# Function to check university honors eligibility
-check_honors() {
+    total_hours=0
+    total_points=0
 
-# Check if a previously saved GPA file exists
-if [[ -f last_cgpa.txt ]]; then
-  # Load the saved GPA data
-  source last_cgpa.txt
-  echo "Found saved GPA file."
-  echo "Saved GPA: $GPA out of $SYSTEM (Calculated on $CALCULATED)"
- 
-  # Ask if the user wants to reuse the saved GPA
-  read -p "Do you want to use this GPA? (y/n): " use_saved
-  if [[ $use_saved != "y" ]]; then
-    # Ask if the user knows their GPA
-    read -p "Do you know your cumulative GPA? (y/n): " know_gpa
-    if [[ $know_gpa == "y" ]]; then
-      # User enters GPA and the GPA system (out of 4 or 5)
-      read -p "Enter your cumulative GPA: " GPA
-      read -p "Enter GPA scale (4 or 5): " SYSTEM
-    else
-      # Redirect to GPA calculator script
-      echo "Redirecting to cumulative GPA calculator..."
-      bash cgpa.sh
-      source last_cgpa.txt  # Reload the generated GPA data
+    for ((i=1; i<=terms; i++)); do
+        while true; do
+            read -p "Total credit hours for semester $i: " hours
+            [[ $hours =~ ^[1-9][0-9]*$ ]] && break
+            echo "Invalid input. Enter a positive integer."
+        done
+        while true; do
+            read -p "Total grade points for semester $i: " points
+            [[ $points =~ ^[0-9]+([.][0-9]+)?$ ]] && break
+            echo "Invalid input. Enter a valid number."
+        done
+        total_hours=$((total_hours + hours))
+        total_points=$(echo "$total_points + $points" | bc)
+    done
+
+    cgpa=$(printf "%.2f" "$(echo "$total_points / $total_hours" | bc -l)")
+
+    if awk -v g="$cgpa" -v s="$system" 'BEGIN{exit !(g > s)}'; then
+        echo "Error: GPA result exceeds maximum scale ($system). Check your input."
+        return 1
     fi
-  fi
-else
-  # No GPA file found, ask user to enter or calculate
-  echo "No saved GPA found."
-  read -p "Do you know your cumulative GPA? (y/n): " know_gpa
-  if [[ $know_gpa == "y" ]]; then
-    # Manual input of GPA and system
-    read -p "Enter your cumulative GPA: " GPA
-    read -p "Enter GPA scale (4 or 5): " SYSTEM
-  else
-    # Call external GPA calculator
-    echo "Redirecting to cumulative GPA calculator..."
-    bash cgpa.sh
-    source last_cgpa.txt
-  fi
-fi
 
-# Display the GPA being used
-echo "-------------------------------"
-echo "Your GPA is: $GPA out of $SYSTEM"
+    echo "Your cumulative GPA is: $cgpa out of $system"
 
-# Initialize honors eligibility flag
-honor_message_shown=false
-
-# Determine eligibility based on GPA system (5-point or 4-point)
-if [[ $SYSTEM == 5 ]]; then
-  # First Class Honors (GPA >= 4.75)
-  if awk -v g="$GPA" 'BEGIN{exit !(g >= 4.75)}'; then
-    echo "Congratulations! You are eligible for First Class Honors."
-    honor_message_shown=true
-  # Second Class Honors (GPA >= 4.25)
-  elif awk -v g="$GPA" 'BEGIN{exit !(g >= 4.25)}'; then
-    echo "Congratulations! You are eligible for Second Class Honors."
-    honor_message_shown=true
-  fi
-else
-  # For 4-point system:
-  # First Class Honors (GPA >= 3.75)
-  if awk -v g="$GPA" 'BEGIN{exit !(g >= 3.75)}'; then
-    echo "Congratulations! You are eligible for First Class Honors."
-    honor_message_shown=true
-  # Second Class Honors (GPA >= 3.25)
-  elif awk -v g="$GPA" 'BEGIN{exit !(g >= 3.25)}'; then
-    echo "Congratulations! You are eligible for Second Class Honors."
-    honor_message_shown=true
-  fi
-fi
-
-# If eligible, show additional requirements
-if [[ $honor_message_shown == true ]]; then
-  echo "Note: Honors eligibility may vary by university."
-  echo "  1. No failing grades during the study period."
-  echo "  2. Completing the program within the official study period."
-  echo "  3. Completing at least 60% of coursework at the same university."
-else
-  echo "Unfortunately, you are not eligible for honors."
-fi
+    echo -e "GPA=$cgpa\nSYSTEM=$system\nCALCULATED=\"$(date)\"" > last_cgpa.txt
+    echo "Saved to last_cgpa.txt."
 }
 
-# === MAIN MENU LOOP ===
+check_honors() {
+    if [[ -f last_cgpa.txt ]]; then
+        source last_cgpa.txt
+        echo "Found saved GPA file."
+        echo "Saved GPA: $GPA out of $SYSTEM (Calculated on $CALCULATED)"
+        read -p "Do you want to use this GPA? (y/n): " use_saved
+        if [[ $use_saved != "y" ]]; then
+            read -p "Do you know your cumulative GPA? (y/n): " know_gpa
+            if [[ $know_gpa == "y" ]]; then
+                read -p "Enter your cumulative GPA: " GPA
+                read -p "Enter GPA scale (4 or 5): " SYSTEM
+            else
+                echo "Redirecting to cumulative GPA calculator..."
+                calculate_cgpa
+                source last_cgpa.txt
+            fi
+        fi
+    else
+        echo "No saved GPA found."
+        read -p "Do you know your cumulative GPA? (y/n): " know_gpa
+        if [[ $know_gpa == "y" ]]; then
+            read -p "Enter your cumulative GPA: " GPA
+            read -p "Enter GPA scale (4 or 5): " SYSTEM
+        else
+            echo "Redirecting to cumulative GPA calculator..."
+            calculate_cgpa
+            source last_cgpa.txt
+        fi
+    fi
+
+    echo "-------------------------------"
+    echo "Your GPA is: $GPA out of $SYSTEM"
+
+    honor_message_shown=false
+
+    if [[ $SYSTEM == 5 ]]; then
+        if awk -v g="$GPA" 'BEGIN{exit !(g >= 4.75)}'; then
+            echo "Congratulations! You are eligible for First Class Honors."
+            honor_message_shown=true
+        elif awk -v g="$GPA" 'BEGIN{exit !(g >= 4.25)}'; then
+            echo "Congratulations! You are eligible for Second Class Honors."
+            honor_message_shown=true
+        fi
+    else
+        if awk -v g="$GPA" 'BEGIN{exit !(g >= 3.75)}'; then
+            echo "Congratulations! You are eligible for First Class Honors."
+            honor_message_shown=true
+        elif awk -v g="$GPA" 'BEGIN{exit !(g >= 3.25)}'; then
+            echo "Congratulations! You are eligible for Second Class Honors."
+            honor_message_shown=true
+        fi
+    fi
+
+    if [[ $honor_message_shown == true ]]; then
+        echo "Note: Honors eligibility may vary by university."
+        echo "  1. No failing grades during the study period."
+        echo "  2. Completing the program within the official study period."
+        echo "  3. Completing at least 60% of coursework at the same university."
+    else
+        echo "Unfortunately, you are not eligible for honors."
+    fi
+}
 
 while true; do
   echo "=============================="
