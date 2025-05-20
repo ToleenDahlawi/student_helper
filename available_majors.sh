@@ -5,13 +5,12 @@ gpa=$1
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
         echo "No GPA calculated. Choose an option:"
-        echo "1) Calculate GPA   2) Enter your GPA   3) Cancel"
-        read -p "Choose an option [1-3]: " op
+        echo " 1) Enter your GPA   2) Cancel"
+        read -p "Choose an option [1-2]: " op
 
         case $op in
-            1) gpa=$(calculate_gpa) ;; # Call GPA calculation function
-            2) read -p "Enter your GPA: " gpa ;;
-            3) return ;;
+            1) read -p "Enter your GPA: " gpa ;;
+            2) return ;;
             *) echo "Invalid option."; return ;;
         esac
     fi
