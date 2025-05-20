@@ -41,7 +41,6 @@ function choose_college {
         else
             echo "Invalid input. Please enter letters and spaces only."
         fi
-    done
 
     echo "Selected College: $selected_college"
 }
