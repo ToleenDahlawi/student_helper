@@ -1,5 +1,8 @@
 #!/bin/bash
 
+selected_college=""
+student_gender=""
+
 function choose_college {
     #Gender input with validation
     while true; do
@@ -15,7 +18,7 @@ function choose_college {
     done
    
     #Prompt user to enter the college name
-    read -p "Enter the college: " $selected_college
+    read -p "Enter the college: " selected_college
     
     if [[ $(echo "$selected_college" | sed 's/^[ \t]*//;s/[ \t]*$//') ]]; then # Remove spaces
     selected_college=${selected_college,,}  # Convert to lowercase for comparison
