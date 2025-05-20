@@ -1,3 +1,4 @@
+#!/bin/bash
 # Function to show available university majors based on GPA and gender and the college
 
 
