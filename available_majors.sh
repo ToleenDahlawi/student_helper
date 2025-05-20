@@ -11,8 +11,8 @@ if [[ -z "$1" ]]; then
 
         case $op in
             1) read -p "Enter your GPA: " gpa ;;
-            2) return ;;
-            *) echo "Invalid option."; return ;;
+            2) exit 0 ;;
+            *) echo "Invalid option."; exit 1 ;;
         esac
     fi
 
