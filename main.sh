@@ -49,12 +49,12 @@ function choose_college {
   echo "Selected College: $selected_college"
 }
 
-# Function to calculate the weighted GPA based on 3 scores
+# Calculate weighted GPA
 function calculate_weighted {
   echo ""
   echo "Enter your scores to calculate weighted GPA:"
 
-  # Prompt for High School grade and validate it
+  # Validate each score
   while true; do
     read -p "High School Grade: " th
     if [[ "$th" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$th >= 0" | bc -l) )); then
@@ -63,29 +63,25 @@ function calculate_weighted {
       echo "Invalid input. Please enter a positive number."
     fi
   done
-
-  # Prompt for Qudurat score and validate it
-  while true; do
-    read -p "Qudurat Score: " qd
+#score input must be [0-100]
+while true; do
+    read -p "General Aptitude Test Score: " qd
     if [[ "$qd" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$qd >= 0" | bc -l) )); then
       break
     else
       echo "Invalid input. Please enter a positive number."
     fi
   done
-
-  # Prompt for Tahsili score and validate it
-  while true; do
-    read -p "Tahsili Score: " hs
+while true; do
+    read -p "Academic Achievement Test Score: " hs
     if [[ "$hs" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$hs >= 0" | bc -l) )); then
       break
     else
       echo "Invalid input. Please enter a positive number."
     fi
   done
-
-  # Weighted GPA formula: 30% high school, 30% Qudurat, 40% Tahsili
-  total_weight=$(echo "scale=2; ($th * 0.3) + ($qd * 0.3) + ($hs * 0.4)" | bc)
+#calculating GPA based on Saudi educational system
+total_weight=$(echo "scale=2; ($th * 0.3) + ($qd * 0.3) + ($hs * 0.4)" | bc)
   echo "Your Weighted GPA: $total_weight"
 }
 
