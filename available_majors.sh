@@ -1,8 +1,5 @@
 #!/bin/bash
 
-selected_college=""
-student_gender=""
-
 function choose_college {
     #Gender input with validation
     while true; do
