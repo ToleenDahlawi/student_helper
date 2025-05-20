@@ -5,13 +5,12 @@ gpa=$1
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
         echo "No GPA calculated. Choose an option:"
-        echo "1) Calculate GPA   2) Enter your GPA   3) Cancel"
+        echo " 1) Enter your GPA   2) Cancel"
         read -p "Choose an option [1-3]: " op
 
         case $op in
-            1) gpa=$(calculate_gpa) ;; # Call GPA calculation function
-            2) read -p "Enter your GPA: " gpa ;;
-            3) return ;;
+            1) read -p "Enter your GPA: " gpa ;;
+            2) return ;;
             *) echo "Invalid option."; return ;;
         esac
     fi
@@ -47,6 +46,7 @@ if [[ -z "$1" ]]; then
     # Read majors.csv and print majors where the GPA meets the requirement for the user's gender
     # Use sed to remove the header (first line) from majors.csv, then process the remaining lines
      sed 1d majors.csv | while IFS=',' read -r col major min_gpa_male min_gpa_female; do
+     
     # Convert the college name in the file to lowercase for case-insensitive comparison
     col_lc=$(echo "$col" | tr '[:upper:]' '[:lower:]')
 
