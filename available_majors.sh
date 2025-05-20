@@ -3,7 +3,7 @@
 
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
-   if [[ -f gpt.txt]]; then
+   if [[ -f gpt.txt ]]; then
     gpa=$(<gpa.txt)
     else
         echo "No GPA calculated. Choose an option "
@@ -16,6 +16,8 @@ if [[ -z "$1" ]]; then
             2) exit 0 ;;
             *) echo "Invalid option."; exit 1 ;;
         esac
+      fi
+     else
         gpa=$1
     fi
 
