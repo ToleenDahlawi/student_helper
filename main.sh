@@ -16,20 +16,20 @@ calculate_gpa() {
 }
 
 # Get the scores from the user
-hs_score=$(get_score "Enter High School Cumulative Score")
-gapt_score=$(get_score "Enter General Aptitude Test Score")
-aat_score=$(get_score "Enter Academic Achievement Test Score")
+hs_score=$(calculate_gpa "Enter High School Cumulative Score")
+gapt_score=$(calculate_gpa "Enter General Aptitude Test Score")
+aat_score=$(calculate_gpa "Enter Academic Achievement Test Score")
 
 # Calculate GPA
 gpa=$(echo "scale=2; $hs_score*0.3 + $gapt_score*0.3 + $aat_score*0.4" | bc)
 
 # Display result
 echo "Calculated GPA: $gpa"
-echo $gpa > gpa.txt
+echo $gpa > gpa.txtك
 available_majors() {
 # If GPA is not provided, ask the user what to do
 if [[ -z "$1" ]]; then
-   if [[ -f gpt.txt ]]; then
+   if [[ -f gpa.txt ]]; then
     gpa=$(<gpa.txt)
     else
         echo "No GPA calculated. Choose an option "
