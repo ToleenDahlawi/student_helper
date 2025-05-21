@@ -53,11 +53,10 @@ function choose_college {
 function calculate_weighted {
   echo ""
   echo "Enter your scores to calculate weighted GPA:"
-
   # Validate each score
   while true; do
-    read -p "High School Grade: " th
-    if [[ "$th" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$th >= 0" | bc -l) )); then
+    read -p "High School Grade: " hs
+    if [[ "$hs" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$hs >= 0" | bc -l) )); then
       break
     else
       echo "Invalid input. Please enter a positive number."
@@ -73,15 +72,15 @@ while true; do
     fi
   done
 while true; do
-    read -p "Academic Achievement Test Score: " hs
-    if [[ "$hs" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$hs >= 0" | bc -l) )); then
+    read -p "Academic Achievement Test Score: " th
+    if [[ "$th" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$th >= 0" | bc -l) )); then
       break
     else
       echo "Invalid input. Please enter a positive number."
     fi
   done
 #calculating GPA based on Saudi educational system
-total_weight=$(echo "scale=2; ($th * 0.3) + ($qd * 0.3) + ($hs * 0.4)" | bc)
+total_weight=$(echo "scale=2; ($hs * 0.3) + ($qd * 0.3) + ($th * 0.4)" | bc)
   echo "Your Weighted GPA: $total_weight"
 }
 
@@ -103,9 +102,9 @@ function check_eligibility {
 
       # Compare user's GPA with the required GPA
       if (( $(echo "$total_weight >= $required" | bc -l) )); then
-        eligible_majors+=("$major")  # Eligible
+        eligible_majors+=("$major      eligible ")  # Eligible
       else
-        eligible_majors+=("$major not eligible (Required: $required)")  # Not eligible
+        eligible_majors+=("$major      not eligible (Required: $required)")  # Not eligible
       fi
     fi
   done < <(tail -n +2 majors.txt)  # Skip the header row
